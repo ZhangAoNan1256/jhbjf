@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JHB积分商城 - 首页</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .main-container {
+            margin-top: 50px;
+        }
+        .card {
+            border: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .flow-step {
+            text-align: center;
+            padding: 20px;
+        }
+        .flow-arrow {
+            font-size: 2rem;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container main-container">
+        <div class="row justify-content-center">
+            <div class="col-md-10">
+                <!-- 标题 -->
+                <div class="text-center mb-5">
+                    <h1 class="text-white display-4 fw-bold">JHB积分商城管理系统</h1>
+                    <p class="text-white-50">通行费 → 积分 → 兑券 → 下单，完整业务闭环</p>
+                </div>
+
+                <!-- 业务流程图 -->
+                <div class="card mb-4">
+                    <div class="card-body bg-primary text-white rounded">
+                        <h4 class="text-center mb-4">业务流程</h4>
+                        <div class="row align-items-center">
+                            <div class="col flow-step">
+                                <div class="fs-1">🚗</div>
+                                <h5>录入通行费</h5>
+                                <small>添加行驶记录</small>
+                            </div>
+                            <div class="col flow-arrow">→</div>
+                            <div class="col flow-step">
+                                <div class="fs-1">💰</div>
+                                <h5>核算积分</h5>
+                                <small>通行费转积分</small>
+                            </div>
+                            <div class="col flow-arrow">→</div>
+                            <div class="col flow-step">
+                                <div class="fs-1">🎫</div>
+                                <h5>兑换优惠券</h5>
+                                <small>积分兑券</small>
+                            </div>
+                            <div class="col flow-arrow">→</div>
+                            <div class="col flow-step">
+                                <div class="fs-1">🛒</div>
+                                <h5>下单购物</h5>
+                                <small>使用积分/券</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 功能导航 -->
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <a href="user.html" class="text-decoration-none">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <div class="fs-1 mb-3">👥</div>
+                                    <h5 class="card-title">用户管理</h5>
+                                    <p class="card-text text-muted">查看用户列表，选择当前操作用户</p>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-4">
+                        <a href="traffic.html" class="text-decoration-none">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <div class="fs-1 mb-3">🚗</div>
+                                    <h5 class="card-title">通行费管理</h5>
+                                    <p class="card-text text-muted">录入行驶通行费，查询通行记录</p>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-4">
+                        <a href="point.html" class="text-decoration-none">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <div class="fs-1 mb-3">💰</div>
+                                    <h5 class="card-title">积分中心</h5>
+                                    <p class="card-text text-muted">核算积分，查询余额和日志</p>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-4">
+                        <a href="coupon.html" class="text-decoration-none">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <div class="fs-1 mb-3">🎫</div>
+                                    <h5 class="card-title">优惠券</h5>
+                                    <p class="card-text text-muted">浏览优惠券，积分兑换</p>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-4">
+                        <a href="goods.html" class="text-decoration-none">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <div class="fs-1 mb-3">📦</div>
+                                    <h5 class="card-title">商品列表</h5>
+                                    <p class="card-text text-muted">查看可兑换商品</p>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-4">
+                        <a href="order.html" class="text-decoration-none">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <div class="fs-1 mb-3">📋</div>
+                                    <h5 class="card-title">订单管理</h5>
+                                    <p class="card-text text-muted">创建订单，查询订单记录</p>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- 底部信息 -->
+                <div class="text-center mt-5 text-white-50">
+                    <p>© 2026 JHB积分商城 | 双击HTML文件即可运行</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户管理 - JHB积分商城</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .navbar {
+            margin-bottom: 20px;
+        }
+        .user-row {
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .user-row:hover {
+            background-color: #e9ecef;
+        }
+        .user-row.selected {
+            background-color: #d4edda !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">🏠 JHB积分商城</a>
+            <div class="navbar-nav ms-auto">
+                <span class="nav-link text-white" id="currentUser"></span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="row mb-3">
+            <div class="col">
+                <h2>👥 用户管理</h2>
+                <p class="text-muted">点击用户行可选择该用户，userId将自动保存供其他页面使用</p>
+            </div>
+        </div>
+
+        <!-- 操作按钮 -->
+        <div class="row mb-3">
+            <div class="col">
+                <button class="btn btn-success" onclick="initUsers()">
+                    🔄 初始化用户（创建测试数据）
+                </button>
+                <button class="btn btn-primary" onclick="loadUsers()">
+                    🔃 刷新列表
+                </button>
+            </div>
+        </div>
+
+        <!-- 用户列表 -->
+        <div class="card">
+            <div class="card-body">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>用户ID</th>
+                            <th>姓名</th>
+                            <th>手机号</th>
+                            <th>车牌号</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="userTableBody">
+                        <tr>
+                            <td colspan="5" class="text-center">加载中...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="global.js"></script>
+    <script>
+        // 页面加载时获取用户列表
+        window.onload = function() {
+            loadUsers();
+            updateCurrentUserDisplay();
+        };
+
+        // 更新当前用户显示
+        function updateCurrentUserDisplay() {
+            const userId = getCurrentUserId();
+            if (userId) {
+                document.getElementById('currentUser').textContent = `当前用户ID: ${userId}`;
+            } else {
+                document.getElementById('currentUser').textContent = '未选择用户';
+            }
+        }
+
+        // 加载用户列表
+        async function loadUsers() {
+            try {
+                // 后端返回结构为 {code, message, list: [...]}
+                const response = await axios.get('/api/user/list');
+                displayUsers(response.data.list || []);
+            } catch (error) {
+                handleError(error);
+            }
+        }
+
+        // 显示用户列表
+        function displayUsers(users) {
+            const tbody = document.getElementById('userTableBody');
+            
+            if (!users || users.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center">暂无用户数据，请先初始化用户</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = users.map(user => `
+                <tr class="user-row ${getCurrentUserId() == user.id ? 'selected' : ''}" 
+                    onclick="selectUser(${user.id}, this)">
+                    <td>${user.id}</td>
+                    <td>${user.userName || '-'}</td>
+                    <td>${user.phone || '-'}</td>
+                    <td>${user.plateNumber || '-'}</td>
+                    <td>
+                        <button class="btn btn-sm btn-primary" onclick="event.stopPropagation(); selectUser(${user.id}, this)">
+                            选择
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // 选择用户
+        function selectUser(userId, element) {
+            setCurrentUserId(userId);
+            updateCurrentUserDisplay();
+            
+            // 更新表格选中状态
+            document.querySelectorAll('.user-row').forEach(row => {
+                row.classList.remove('selected');
+            });
+            
+            // 找到最近的 tr 元素并添加选中状态
+            const row = element.closest('tr');
+            if (row) {
+                row.classList.add('selected');
+            }
+            
+            tip(`已选择用户ID: ${userId}`);
+            
+            // 复制到剪贴板 (转换为字符串)
+            navigator.clipboard.writeText(String(userId)).then(() => {
+                console.log('userId已复制到剪贴板');
+            });
+        }
+
+        // 初始化用户
+        async function initUsers() {
+            if (!confirm('确定要初始化用户吗？这将创建5个测试用户。')) {
+                return;
+            }
+
+            try {
+                const response = await axios.post('/api/user/init');
+                tip(response.data.message || '初始化成功');
+                loadUsers();
+            } catch (error) {
+                handleError(error);
+            }
+        }
+    </script>
+</body>
+</html>

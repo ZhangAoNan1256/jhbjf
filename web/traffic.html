@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>里程管理 - JHB积分商城</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .navbar {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">🏠 JHB积分商城</a>
+            <div class="navbar-nav ms-auto">
+                <span class="nav-link text-white" id="currentUser"></span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="row mb-3">
+            <div class="col">
+                <h2>🚗 里程管理</h2>
+                <p class="text-muted">录入行驶里程，里程核算后将转换为积分</p>
+            </div>
+        </div>
+
+        <!-- 添加里程表单 -->
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">➕ 添加里程记录</h5>
+            </div>
+            <div class="card-body">
+                <form id="trafficForm" onsubmit="addTraffic(event)">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">用户ID</label>
+                            <input type="number" class="form-control" id="userId" required>
+                            <small class="text-muted">可从用户管理页面选择用户自动填充</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">车牌号</label>
+                            <input type="text" class="form-control" id="plateNumber" placeholder="例如：京A12345" required>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">行驶里程（公里）</label>
+                            <input type="number" class="form-control" id="mileage" step="0.1" min="0" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">行驶时间</label>
+                            <input type="datetime-local" class="form-control" id="driveTime" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-success">✅ 提交里程记录</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- 里程列表 -->
+        <div class="card">
+            <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">📋 里程记录列表</h5>
+                <button class="btn btn-light btn-sm" onclick="loadTrafficList()">🔃 刷新</button>
+            </div>
+            <div class="card-body">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>用户ID</th>
+                            <th>车牌号</th>
+                            <th>里程(km)</th>
+                            <th>行驶时间</th>
+                            <th>状态</th>
+                            <th>创建时间</th>
+                        </tr>
+                    </thead>
+                    <tbody id="trafficTableBody">
+                        <tr>
+                            <td colspan="7" class="text-center">加载中...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="global.js"></script>
+    <script>
+        // 页面加载
+        window.onload = function() {
+            updateCurrentUserDisplay();
+            
+            // 如果有选中的用户，自动填充
+            const userId = getCurrentUserId();
+            if (userId) {
+                document.getElementById('userId').value = userId;
+                loadTrafficList(userId);
+            }
+            
+            // 设置默认时间为当前时间
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            document.getElementById('driveTime').value = now.toISOString().slice(0, 16);
+        };
+
+        // 更新当前用户显示
+        function updateCurrentUserDisplay() {
+            const userId = getCurrentUserId();
+            if (userId) {
+                document.getElementById('currentUser').textContent = `当前用户ID: ${userId}`;
+            } else {
+                document.getElementById('currentUser').textContent = '未选择用户';
+            }
+        }
+
+        // 添加里程记录
+        async function addTraffic(event) {
+            event.preventDefault();
+            
+            const data = {
+                userId: parseInt(document.getElementById('userId').value),
+                plateNumber: document.getElementById('plateNumber').value,
+                amount: parseFloat(document.getElementById('mileage').value),
+                trafficTime: document.getElementById('driveTime').value.replace('T', ' ') + ':00'
+            };
+
+            try {
+                const response = await axios.post('/api/traffic/add', data);
+                tip(response.data.message || '添加成功');
+                
+                // 清空表单
+                document.getElementById('plateNumber').value = '';
+                document.getElementById('mileage').value = '';
+                
+                // 重新加载列表
+                loadTrafficList(data.userId);
+            } catch (error) {
+                handleError(error);
+            }
+        }
+
+        // 加载里程列表
+        async function loadTrafficList(userId) {
+            if (!userId) {
+                userId = document.getElementById('userId').value;
+            }
+            
+            if (!userId) {
+                document.getElementById('trafficTableBody').innerHTML = 
+                    '<tr><td colspan="7" class="text-center">请先输入用户ID</td></tr>';
+                return;
+            }
+
+            try {
+                // 后端返回结构为 {code, message, list: [...]}
+                const response = await axios.get(`/api/traffic/list?userId=${userId}`);
+                displayTrafficList(response.data.list || []);
+            } catch (error) {
+                handleError(error);
+            }
+        }
+
+        // 显示里程列表
+        function displayTrafficList(records) {
+            const tbody = document.getElementById('trafficTableBody');
+            
+            if (!records || records.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center">暂无里程记录</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = records.map(record => `
+                <tr>
+                    <td>${record.id}</td>
+                    <td>${record.userId}</td>
+                    <td>${record.plateNumber}</td>
+                    <td>${record.amount}</td>
+                    <td>${record.trafficTime ? record.trafficTime.substring(0, 19) : '-'}</td>
+                    <td>
+                        <span class="badge ${record.isCalculate == 1 ? 'bg-success' : 'bg-warning'}">
+                            ${record.isCalculate == 1 ? '已核算' : '未核算'}
+                        </span>
+                    </td>
+                    <td>${record.createTime ? record.createTime.substring(0, 19) : '-'}</td>
+                </tr>
+            `).join('');
+        }
+    </script>
+</body>
+</html>
